@@ -100,6 +100,7 @@ void init_board(board_2048 *board){
     }
 }
 
+// 一つのマスにおいて上下左右に動けるかを判定する
 void CanMove_grid(board_2048 *board){
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
@@ -132,6 +133,7 @@ void CanMove_grid(board_2048 *board){
     }
 }
 
+// 右に動けるか判定(true:動ける, false:動けない)
 bool CanMove_R(board_2048 *board){
     for(int i = 0; i < 4; i++){
         if(
@@ -143,6 +145,7 @@ bool CanMove_R(board_2048 *board){
     return false;
 }
 
+// 左に動けるか判定(true:動ける, false:動けない)
 bool CanMove_L(board_2048 *board){
     for(int i = 0; i < 4; i++){
         if(
@@ -154,6 +157,7 @@ bool CanMove_L(board_2048 *board){
     return false;
 }
 
+// 上に動けるか判定(true:動ける, false:動けない)
 bool CanMove_U(board_2048 *board){
     for(int i = 0; i < 3; i++){
         if(
@@ -165,6 +169,7 @@ bool CanMove_U(board_2048 *board){
     return false;
 }
 
+// 下に動けるか判定(true:動ける, false:動けない)
 bool CanMove_D(board_2048 *board){
     for(int i = 0; i < 3; i++){
         if(
@@ -174,6 +179,61 @@ bool CanMove_D(board_2048 *board){
         ) return true;
     }
     return false;
+}
+
+void swap(board_2048 *board, int i, int j, char c){
+    if(c == 'r'){
+        board->grid[i][j] = board->grid[i][j + 1];
+        board->grid[i][j] = 0;
+    }
+    else if(c == 'l'){
+        board->grid[i][j] = board->grid[i][j - 1];
+        board->grid[i][j] = 0;
+    }
+    else if(c == 'u'){
+        board->grid[i][j] = board->grid[i - 1][j];
+        board->grid[i][j] = 0;
+    }
+    else{
+        board->grid[i][j] = board->grid[i + 1][j];
+        board->grid[i][j] = 0;
+    }
+}
+
+void marge(board_2048 *board, int i, int j, char c){
+    if(c == 'r'){
+        board->grid[i][j + 1] << 1;
+        board->grid[i][j] = 0;
+    }
+    else if(c == 'l'){
+        board->grid[i][j - 1] << 1;
+        board->grid[i][j] = 0;
+    }
+    else if(c == 'u'){
+        board->grid[i - 1][j] << 1;
+        board->grid[i][j] = 0;
+    }
+    else{
+        board->grid[i + 1][j] << 1;
+        board->grid[i][j] = 0;
+    }
+}
+
+void Move_R(board_2048 *board){
+    for(int i = 0; i < 4; i++){
+        for(int j = 2; j >= 0; j--){
+            if(board->grid[i][j] != 0){
+                if(board->grid[i][j] == board->grid[i][j + 1]){
+                    board->grid[i][j + 1] << 1; // 二倍をシフト演算で表現
+                    board->grid[i][j] = 0;
+                }
+                else if(board->grid[i][j + 1] == 0){
+                    board->grid[i][j + 1] = board->grid[i][j];
+                    board->grid[i][j] = 0;
+                }
+            }
+        }
+    }
 }
 
 // ボードの表示
@@ -191,6 +251,7 @@ void print_board(board_2048 *board){
     }
 }
 
+// スコアの計算
 int calc_score(board_2048 *board){
     int score = 0;
     for(int i = 0; i < 4; i++){
@@ -219,20 +280,32 @@ int main(){
                 if(!CanMove_U(board)){
                     cout << "Invaild direction" << endl << endl;
                 }
+                else{
+
+                }
             }
             else if(direction == 'a'){
                 if(!CanMove_L(board)){
                     cout << "Invaild direction" << endl << endl;
+                }
+                else{
+                    
                 }
             }
             else if(direction == 's'){
                 if(!CanMove_D(board)){
                     cout << "Invaild direction" << endl << endl;
                 }
+                else{
+                    
+                }
             }
             else if(direction == 'd'){
                 if(!CanMove_R(board)){
                     cout << "Invaild direction" << endl << endl;
+                }
+                else{
+                    
                 }
             }
             else cout << "Invaild key" << endl << endl;
