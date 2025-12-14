@@ -191,7 +191,6 @@ void move(board_2048 *board, int i, int j, int k, char c){
         board->grid[j][i] = 0;
     }
     else{
-        cout << 'a' << endl;
         board->grid[j + k][i] = board->grid[j][i];
         board->grid[j][i] = 0;
     }
@@ -199,25 +198,30 @@ void move(board_2048 *board, int i, int j, int k, char c){
 
 // 座標(i, j)の値とkだけ移動させた場所にある値を合成する
 void marge(board_2048 *board, int i, int j, int k, char c){
+    cout << "marge" << i << j << endl;
     if(c == 'r'){
-        board->grid[i][j + k] << 1;
-        board->grid[i][j] = 0;
+        board->grid[i][j] <<= 1;
+        cout << board->grid[i][j] << endl;
+        move(board, i, j, k, c);
         board->marged_flg[i][j + k] = true;
     }
     else if(c == 'l'){
-        board->grid[i][j - k] << 1;
-        board->grid[i][j] = 0;
+        board->grid[i][j] <<= 1;
+        cout << board->grid[i][j] << endl;
+        move(board, i, j, k, c);
         board->marged_flg[i][j - k] = true;
     }
     else if(c == 'u'){
-        board->grid[i - k][j] << 1;
-        board->grid[i][j] = 0;
-        board->marged_flg[i + k][j] = true;
+        board->grid[j][i] <<= 1;
+        cout << board->grid[j][i] << endl;
+        move(board, i, j, k, c);
+        board->marged_flg[j + k][i] = true;
     }
     else{
-        board->grid[i + k][j] << 1;
-        board->grid[i][j] = 0;
-        board->marged_flg[i - k][j] = true;
+        board->grid[j][i] <<= 1;
+        cout << board->grid[j][i] << endl;
+        move(board, i, j, k, c);
+        board->marged_flg[j - k][i] = true;
     }
     board->vacant_total--;
 }
@@ -352,12 +356,12 @@ void Move_D(board_2048 *board){
                     else if(board->grid[j + k][i] != 0 &&
                             board->grid[j][i] != board->grid[j + k][i] &&
                             k > 1){
-                        cout << 'b' << endl;
+                        //cout << 'b' << endl;
                         move(board, i, j, k - 1, 'd');
                         break;
                     }
                     else if(j + k == 3){
-                        cout << 'c' << endl;
+                        //cout << 'c' << endl;
                         move(board, i, j, k, 'd');
                     }
                 }
@@ -372,24 +376,20 @@ void Pop_value(board_2048 *board){
     uniform_int_distribution<int> dist3(0, board->vacant_total - 1);
     int max   = dist3(mt);
     int value = dist2(mt);
-    cout << max << ',' << value << endl;
     int counter = 0;
     bool temp_flg = false;
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
             if(board->grid[i][j] == 0){
                 if(counter == max){
-                    cout << 'd' << endl;
                     board->grid[i][j] = value;
                     temp_flg = true;
                     break;
                 }
-                cout << counter << endl;
                 counter++;
             }
         }
         if(temp_flg){
-            cout << 'e' << endl;
             break;
         }
     }
