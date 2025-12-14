@@ -13,10 +13,7 @@ struct board_2048 {
     bool move_l_flg[4][4];
     bool move_u_flg[4][4];
     bool move_d_flg[4][4];
-    bool marge_r_flg[4][4];
-    bool marge_l_flg[4][4];
-    bool marge_u_flg[4][4];
-    bool marge_d_flg[4][4];
+    bool marged_flg[4][4];
 };
 
 // 乱数生成器の初期化
@@ -54,39 +51,34 @@ void init_board(board_2048 *board){
 
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
-            // どこも合成できない
-            board->marge_r_flg[i][j] = false;
-            board->marge_l_flg[i][j] = false;
-            board->marge_u_flg[i][j] = false;
-            board->marge_d_flg[i][j] = false;
-
+            board->marged_flg[i][j] = false;
             if(board->grid[i][j] != 0){
-                // 上下左右端以外なら全方向動かせる
-                if(i != 0 && i != 3 && j != 0 && j != 0){
-                    board->move_r_flg[i][j] = true;
-                    board->move_l_flg[i][j] = true;
+                // 上下端は動かせない
+                if(i == 0){
+                    board->move_u_flg[i][j] = false;
+                    board->move_d_flg[i][j] = true;
+                }
+                else if(i == 3){
+                    board->move_u_flg[i][j] = true;
+                    board->move_d_flg[i][j] = false;
+                }
+                else {
                     board->move_u_flg[i][j] = true;
                     board->move_d_flg[i][j] = true;
                 }
-                else{
-                    // 上下端は動かせない
-                    if(i == 0){
-                        board->move_u_flg[i][j] = false;
-                        board->move_d_flg[i][j] = true;
-                    }
-                    else if(i == 3){
-                        board->move_u_flg[i][j] = true;
-                        board->move_d_flg[i][j] = false;
-                    }
-                    // 左右端は動かせない
-                    if(j == 0){
-                        board->move_r_flg[i][j] = true;
-                        board->move_l_flg[i][j] = false;
-                    }
-                    else if(j == 3){
-                        board->move_r_flg[i][j] = false;
-                        board->move_l_flg[i][j] = true;
-                    }
+                
+                // 左右端は動かせない
+                if(j == 0){
+                    board->move_r_flg[i][j] = true;
+                    board->move_l_flg[i][j] = false;
+                }
+                else if(j == 3){
+                    board->move_r_flg[i][j] = false;
+                    board->move_l_flg[i][j] = true;
+                }
+                else {
+                    board->move_r_flg[i][j] = true;
+                    board->move_l_flg[i][j] = true;
                 }
             }
             // 値を持たないところは動けないで初期化
@@ -129,6 +121,12 @@ void CanMove_grid(board_2048 *board){
                 )       board->move_d_flg[i][j] = true;     // 下隣が０または同じ数字のときに下に動ける
                 else    board->move_d_flg[i][j] = false;    // それ以外なら下に動けない
             }
+            else{
+                board->move_r_flg[i][j] = false;
+                board->move_l_flg[i][j] = false;
+                board->move_u_flg[i][j] = false;
+                board->move_d_flg[i][j] = false;
+            }
         }
     }
 }
@@ -159,7 +157,7 @@ bool CanMove_L(board_2048 *board){
 
 // 上に動けるか判定(true:動ける, false:動けない)
 bool CanMove_U(board_2048 *board){
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 4; i++){
         if(
             board->move_u_flg[1][i] ||
             board->move_u_flg[2][i] ||
@@ -171,7 +169,7 @@ bool CanMove_U(board_2048 *board){
 
 // 下に動けるか判定(true:動ける, false:動けない)
 bool CanMove_D(board_2048 *board){
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 4; i++){
         if(
             board->move_d_flg[0][i] ||
             board->move_d_flg[1][i] ||
@@ -181,55 +179,103 @@ bool CanMove_D(board_2048 *board){
     return false;
 }
 
-void swap(board_2048 *board, int i, int j, char c){
+// 座標(i, j)の値をkだけ上下左右に移動する
+void move(board_2048 *board, int i, int j, int k, char c){
     if(c == 'r'){
-        board->grid[i][j] = board->grid[i][j + 1];
+        board->grid[i][j + k] = board->grid[i][j];
         board->grid[i][j] = 0;
     }
     else if(c == 'l'){
-        board->grid[i][j] = board->grid[i][j - 1];
+        board->grid[i][j - k] = board->grid[i][j];
         board->grid[i][j] = 0;
     }
     else if(c == 'u'){
-        board->grid[i][j] = board->grid[i - 1][j];
+        board->grid[i - k][j] = board->grid[i][j];
         board->grid[i][j] = 0;
     }
     else{
-        board->grid[i][j] = board->grid[i + 1][j];
+        board->grid[i + k][j] = board->grid[i][j];
         board->grid[i][j] = 0;
     }
 }
 
-void marge(board_2048 *board, int i, int j, char c){
+// 座標(i, j)の値とkだけ移動させた場所にある値を合成する
+void marge(board_2048 *board, int i, int j, int k, char c){
     if(c == 'r'){
-        board->grid[i][j + 1] << 1;
+        board->grid[i][j + k] << 1;
         board->grid[i][j] = 0;
+        board->marged_flg[i][j + k] = true;
     }
     else if(c == 'l'){
-        board->grid[i][j - 1] << 1;
+        board->grid[i][j - k] << 1;
         board->grid[i][j] = 0;
+        board->marged_flg[i][j - k] = true;
     }
     else if(c == 'u'){
-        board->grid[i - 1][j] << 1;
+        board->grid[i - k][j] << 1;
         board->grid[i][j] = 0;
+        board->marged_flg[i + k][j] = true;
     }
     else{
-        board->grid[i + 1][j] << 1;
+        board->grid[i + k][j] << 1;
         board->grid[i][j] = 0;
+        board->marged_flg[i - k][j] = true;
     }
 }
 
+// ボードを右に動かす
 void Move_R(board_2048 *board){
+    cout << "mover" << endl;
     for(int i = 0; i < 4; i++){
         for(int j = 2; j >= 0; j--){
             if(board->grid[i][j] != 0){
-                if(board->grid[i][j] == board->grid[i][j + 1]){
-                    board->grid[i][j + 1] << 1; // 二倍をシフト演算で表現
-                    board->grid[i][j] = 0;
+                for(int k = 1; j + k < 4; k++){
+                    if(board->grid[i][j + k] != 0 &&
+                       board->grid[i][j] == board->grid[i][j + k]){
+                        marge(board, i, j, k, 'r');
+                        //cout << 'a' << endl;
+                        break;
+                    }
+                    else if(board->grid[i][j + k] != 0 &&
+                            board->grid[i][j] != board->grid[i][j + k] &&
+                            k > 1){
+                        //cout << 'b' << endl;
+                        move(board, i, j, k - 1, 'r');
+                        break;
+                    }
+                    else if(j + k == 3){
+                        //cout << 'c' << endl;
+                        move(board, i, j, k, 'r');
+                    }
                 }
-                else if(board->grid[i][j + 1] == 0){
-                    board->grid[i][j + 1] = board->grid[i][j];
-                    board->grid[i][j] = 0;
+            }
+        }
+    }
+}
+
+void Move_L(board_2048 *board){
+    cout << "movel" << endl;
+    for(int i = 0; i < 4; i++){
+        for(int j = 1; j < 4; j++){
+            if(board->grid[i][j] != 0){
+                for(int k = 1; j - k >= 0; k++){
+                    if(board->grid[i][j - k] != 0 &&
+                       board->grid[i][j] == board->grid[i][j - k]){
+                        marge(board, i, j, k, 'l');
+                        //cout << 'a' << endl;
+                        break;
+                    }
+                    else if(board->grid[i][j - k] != 0 &&
+                            board->grid[i][j] != board->grid[i][j - k] &&
+                            k > 1){
+                        //cout << 'b' << endl;
+                        move(board, i, j, k - 1, 'l');
+                        break;
+                    }
+                    else if(j - k == 0){
+                        //cout << 'c' << endl;
+                        move(board, i, j, k, 'l');
+                    }
                 }
             }
         }
@@ -246,6 +292,8 @@ void print_board(board_2048 *board){
             else{
                 cout << setfill('0') << setw(5) << board->grid[i][j] << " ";
             }
+            // ボード表示のついでにフラグも下ろす
+            board->marged_flg[i][j] = false;
         }
         cout << endl;
     }
@@ -289,7 +337,7 @@ int main(){
                     cout << "Invaild direction" << endl << endl;
                 }
                 else{
-                    
+                    Move_L(board);
                 }
             }
             else if(direction == 's'){
@@ -305,7 +353,7 @@ int main(){
                     cout << "Invaild direction" << endl << endl;
                 }
                 else{
-                    
+                    Move_R(board);
                 }
             }
             else cout << "Invaild key" << endl << endl;
