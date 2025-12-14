@@ -70,11 +70,23 @@ void init_board(board_2048 *board){
                 }
                 else{
                     // 上下端は動かせない
-                    if(i == 0)      board->move_u_flg[i][j] = false;
-                    else if(i == 3) board->move_d_flg[i][j] = false;
+                    if(i == 0){
+                        board->move_u_flg[i][j] = false;
+                        board->move_d_flg[i][j] = true;
+                    }
+                    else if(i == 3){
+                        board->move_u_flg[i][j] = true;
+                        board->move_d_flg[i][j] = false;
+                    }
                     // 左右端は動かせない
-                    if(j == 0)      board->move_l_flg[i][j] = false;
-                    else if(j == 3) board->move_r_flg[i][j] = false;
+                    if(j == 0){
+                        board->move_r_flg[i][j] = true;
+                        board->move_l_flg[i][j] = false;
+                    }
+                    else if(j == 3){
+                        board->move_r_flg[i][j] = false;
+                        board->move_l_flg[i][j] = true;
+                    }
                 }
             }
             // 値を持たないところは動けないで初期化
@@ -86,8 +98,6 @@ void init_board(board_2048 *board){
             }
         }
     }
-
-    
 }
 
 void CanMove_grid(board_2048 *board){
@@ -147,9 +157,9 @@ bool CanMove_L(board_2048 *board){
 bool CanMove_U(board_2048 *board){
     for(int i = 0; i < 3; i++){
         if(
-            board->move_r_flg[1][i] ||
-            board->move_r_flg[2][i] ||
-            board->move_r_flg[3][i]
+            board->move_u_flg[1][i] ||
+            board->move_u_flg[2][i] ||
+            board->move_u_flg[3][i]
         ) return true;
     }
     return false;
@@ -158,9 +168,9 @@ bool CanMove_U(board_2048 *board){
 bool CanMove_D(board_2048 *board){
     for(int i = 0; i < 3; i++){
         if(
-            board->move_r_flg[0][i] ||
-            board->move_r_flg[1][i] ||
-            board->move_r_flg[2][i]
+            board->move_d_flg[0][i] ||
+            board->move_d_flg[1][i] ||
+            board->move_d_flg[2][i]
         ) return true;
     }
     return false;
@@ -199,29 +209,35 @@ int main(){
     while(!board->gameover_flg){
         CanMove_grid(board);
         if(CanMove_R(board) || CanMove_L(board) || CanMove_U(board) || CanMove_D(board)){
-            cout << "select direction(w:↑, a:←, s:↓, d:→)";
+            cout << "select direction(w:↑, a:←, s:↓, d:→)" << endl;
+            cout << "→:" << CanMove_R(board) << endl;
+            cout << "←:" << CanMove_L(board) << endl;
+            cout << "↑:" << CanMove_U(board) << endl;
+            cout << "↓:" << CanMove_D(board) << endl;
             cin >> direction; 
             if(direction == 'w'){
-                if(!CanMove_U){
-                    cout << 'Invaild direction';
+                if(!CanMove_U(board)){
+                    cout << "Invaild direction" << endl << endl;
                 }
             }
             else if(direction == 'a'){
-                if(!CanMove_L){
-                    cout << 'Invaild direction';
+                if(!CanMove_L(board)){
+                    cout << "Invaild direction" << endl << endl;
                 }
             }
             else if(direction == 's'){
-                if(!CanMove_D){
-                    cout << 'Invaild direction';
+                if(!CanMove_D(board)){
+                    cout << "Invaild direction" << endl << endl;
                 }
             }
             else if(direction == 'd'){
-                if(!CanMove_R){
-                    cout << 'Invaild direction';
+                if(!CanMove_R(board)){
+                    cout << "Invaild direction" << endl << endl;
                 }
             }
-            else cout << 'Invaild key'
+            else cout << "Invaild key" << endl << endl;
+
+            print_board(board);
         }
         else board->gameover_flg = true;
     }
