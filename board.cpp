@@ -402,32 +402,49 @@ int calc_score(board_2048 *board){
 }
 
 // AIを一手進める
-bool step(board_2048 *board, int action){
+bool step(board_2048 *board, Action action){
     CanMove_grid(board);
+    bool moved = false;
 
     switch(action){
         case ACT_RIGHT:
-            if(!CanMove_R(board)) return false;
-            Move_R(board);
+            if(CanMove_R(board)){
+                Move_R(board);
+                moved = true;
+            }
             break;
         case ACT_LEFT:
-            if(!CanMove_L(board)) return false;
-            Move_L(board);
+            if(CanMove_L(board)){
+                Move_L(board);
+                moved = true;
+            }
             break;
         case ACT_UP:
-            if(!CanMove_U(board)) return false;
-            Move_U(board);
+            if(CanMove_U(board)){
+                Move_U(board);
+                moved = true;
+            }
             break;
         case ACT_DOWN:
-            if(!CanMove_D(board)) return false;
-            Move_D(board);
+            if(CanMove_D(board)){
+                Move_D(board);
+                moved = true;
+            }
             break;
-        default:
-            return false;
     }
 
-    Pop_value(board);
-    return true;
+    if(moved && board->vacant_total > 0){
+        Pop_value(board);
+    }
+
+    CanMove_grid(board);
+
+    return moved;
+}
+
+// AIの着手方向
+int ai_direc(){
+    return dist1(mt);
 }
 
 // 状態をAI用に変換

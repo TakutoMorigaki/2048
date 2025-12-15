@@ -48,9 +48,11 @@ void Move_D(board_2048 *board);
 bool step(board_2048 *board, Action action);
 // 状態をAI用に変換
 void get_state(const board_2048 *board, float state[16]);
+// AIの着手方向
+int ai_direc();
 
 // 新しく数字をボードに追加する
 void Pop_value(board_2048 *board);
 
 // スコアの計算
-int calc_score(const board_2048 *board);
+int calc_score(board_2048 *board);

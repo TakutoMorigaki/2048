@@ -19,7 +19,7 @@ struct board_2048 {
 // 乱数生成器の初期化
 random_device rd;   // ハードウェア乱数生成機
 mt19937 mt(rd());   // メルセンヌ・ツイスタ法の生成器
-// 0~4までの一様分布の乱数を生成
+// 0~3までの一様分布の乱数を生成
 uniform_int_distribution<int> dist1(0, 3);
 // 1か2の一様分布の乱数を生成
 uniform_int_distribution<int> dist2(1, 2);
@@ -213,12 +213,12 @@ void marge(board_2048 *board, int i, int j, int k, char c){
     else if(c == 'u'){
         board->grid[j][i] <<= 1;
         move(board, i, j, k, c);
-        board->marged_flg[j + k][i] = true;
+        board->marged_flg[j - k][i] = true;
     }
     else{
         board->grid[j][i] <<= 1;
         move(board, i, j, k, c);
-        board->marged_flg[j - k][i] = true;
+        board->marged_flg[j + k][i] = true;
     }
     board->vacant_total++;
 }
