@@ -11,9 +11,7 @@ int main(){
 
     while (!board->gameover_flg) {
         Action action = static_cast<Action>(ai_direc());
-
-        step(board, action);
-
+        
         if (board->vacant_total == 0 &&
             !CanMove_U(board) &&
             !CanMove_D(board) &&
@@ -22,15 +20,9 @@ int main(){
             board->gameover_flg = true;
         }
 
+        step(board, action);
+
         steps++;
-        cout << steps << "," << board->vacant_total << endl;
-        if (board->vacant_total == 0) {
-        std::cout << "U:" << CanMove_U(board)
-                << " D:" << CanMove_D(board)
-                << " L:" << CanMove_L(board)
-                << " R:" << CanMove_R(board)
-                << std::endl;
-}
     }
     cout << "Game over" << endl;
     cout << "steps = " << steps << endl;

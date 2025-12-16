@@ -433,14 +433,19 @@ bool step(board_2048 *board, Action action){
             break;
     }
 
-    if(moved && board->vacant_total > 0){
+    if(moved){
         Pop_value(board);
     }
-
-    CanMove_grid(board);
+    
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++){
+            board->marged_flg[i][j] = false;
+        }
+    }
 
     return moved;
 }
+
 
 // AIの着手方向
 int ai_direc(){
