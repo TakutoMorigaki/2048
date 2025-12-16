@@ -1,25 +1,12 @@
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
+#include "board.hpp"
 #include <random>
 using namespace std;
 
-// 2048のボード構造体
-struct board_2048 {
-    unsigned int grid[4][4];    // ボードを表す4x4の二次元配列
-    int vacant_total;           // 現在の空きマスの個数
-    bool gameover_flg;          // ゲームオーバー判定フラグ
-    bool move_r_flg[4][4];      // あるマスにおいて右に動けるかの判定フラグ
-    bool move_l_flg[4][4];      // あるマスにおいて左に動けるかの判定フラグ
-    bool move_u_flg[4][4];      // あるマスにおいて上に動けるかの判定フラグ
-    bool move_d_flg[4][4];      // あるマスにおいて下に動けるかの判定フラグ
-    bool marged_flg[4][4];      // すでに合成がなされているかを表すフラグ
-};
 
 // 乱数生成器の初期化
 random_device rd;   // ハードウェア乱数生成機
 mt19937 mt(rd());   // メルセンヌ・ツイスタ法の生成器
-// 0~3までの一様分布の乱数を生成
+// 0~4までの一様分布の乱数を生成
 uniform_int_distribution<int> dist1(0, 3);
 // 1か2の一様分布の乱数を生成
 uniform_int_distribution<int> dist2(1, 2);
@@ -177,6 +164,7 @@ bool CanMove_D(board_2048 *board){
     }
     return false;
 }
+
 
 // 座標(i, j)の値をkだけ上下左右に移動する
 void move(board_2048 *board, int i, int j, int k, char c){
@@ -375,6 +363,7 @@ void Move_D(board_2048 *board){
     }
 }
 
+
 // 新しく数字をボードに追加する
 void Pop_value(board_2048 *board){
     // 空きマス分だけの一様分布の乱数を生成
@@ -401,23 +390,6 @@ void Pop_value(board_2048 *board){
     board->vacant_total--;
 }
 
-// ボードの表示
-void print_board(board_2048 *board){
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < 4; j++){
-            if(board->grid[i][j] == 0){
-                cout << setfill(' ') << setw(6) << ". ";
-            }
-            else{
-                cout << setfill('0') << setw(5) << board->grid[i][j] << " ";
-            }
-            // ボード表示のついでにフラグも下ろす
-            board->marged_flg[i][j] = false;
-        }
-        cout << endl;
-    }
-}
-
 // スコアの計算
 int calc_score(board_2048 *board){
     int score = 0;
@@ -429,75 +401,70 @@ int calc_score(board_2048 *board){
     return score;
 }
 
-bool canR;
-bool canL;
-bool canU;
-bool canD;
+// AIを一手進める
+bool step(board_2048 *board, Action action){
+    CanMove_grid(board);
+    bool moved = false;
 
-int main(){
-    board_2048 *board = new board_2048;
-    init_board(board);
-    print_board(board);
-    while(!board->gameover_flg){
-        CanMove_grid(board);
-        canR = CanMove_R(board);
-        canL = CanMove_L(board);
-        canU = CanMove_U(board);
-        canD = CanMove_D(board);
-        if(canR || canL || canU || canD){
-            //ユーザーから方向を取得するための変数
-            string input;
-            cout << "select direction(w:↑, a:←, s:↓, d:→)" << endl;
-            cout << "→:" << canR << endl;
-            cout << "←:" << canL << endl;
-            cout << "↑:" << canU << endl;
-            cout << "↓:" << canD << endl;
-            getline(cin, input);
-            if(input == "w"){
-                if(!canU){
-                    cout << "Invaild direction" << endl << endl;
-                }
-                else{
-                    Move_U(board);
-                    Pop_value(board);
-                }
+    switch(action){
+        case ACT_RIGHT:
+            if(CanMove_R(board)){
+                Move_R(board);
+                moved = true;
             }
-            else if(input == "a"){
-                if(!canL){
-                    cout << "Invaild direction" << endl << endl;
-                }
-                else{
-                    Move_L(board);
-                    Pop_value(board);
-                }
+            break;
+        case ACT_LEFT:
+            if(CanMove_L(board)){
+                Move_L(board);
+                moved = true;
             }
-            else if(input == "s"){
-                if(!canD){
-                    cout << "Invaild direction" << endl << endl;
-                }
-                else{
-                    Move_D(board);
-                    Pop_value(board);
-                }
+            break;
+        case ACT_UP:
+            if(CanMove_U(board)){
+                Move_U(board);
+                moved = true;
             }
-            else if(input == "d"){
-                if(!canR){
-                    cout << "Invaild direction" << endl << endl;
-                }
-                else{
-                    Move_R(board);
-                    Pop_value(board);
-                }
+            break;
+        case ACT_DOWN:
+            if(CanMove_D(board)){
+                Move_D(board);
+                moved = true;
             }
-            else cout << "Invaild input" << endl << endl;
-
-            print_board(board);
-        }
-        else board->gameover_flg = true;
+            break;
     }
-    cout << "gameover" << endl;
-    cout << "SCORE: " << calc_score(board);
 
-    delete board;
-    return 0;
+    if(moved){
+        Pop_value(board);
+    }
+    
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++){
+            board->marged_flg[i][j] = false;
+        }
+    }
+
+    return moved;
+}
+
+
+// AIの着手方向
+int ai_direc(){
+    return dist1(mt);
+}
+
+// 状態をAI用に変換
+void get_state(const board_2048* board, float state[16]){
+    int idx = 0;
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++){
+            if(board->grid[i][j] == 0){
+                state[idx] = 0.0f;
+                idx++;
+            }
+            else{
+                state[idx] = std::log2(board->grid[i][j]);
+                idx++;
+            }
+        }
+    }
 }
