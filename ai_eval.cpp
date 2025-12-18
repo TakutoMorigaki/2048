@@ -59,6 +59,15 @@ int marge_bonus(board_2048 &board){
     return bonus;
 }
 
+// 動ける方向数
+int mobility(board_2048 &board){
+    int mobility = 0;
+    if(CanMove_R(board)) mobility++;
+    if(CanMove_L(board)) mobility++;
+    if(CanMove_U(board)) mobility++;
+    if(CanMove_D(board)) mobility++;
+    return mobility;
+}
 
 // 左上もしくは右上(ver.4から左上)に最大値が来るようにする
 
@@ -140,6 +149,33 @@ int evaluate_board_04(board_2048 &board){
 
     score += continuously(board);
     score += marge_bonus(board) * 50;
+
+    return score;
+}
+
+// 評価関数ver.5
+int evaluate_board_05(board_2048 &board){
+    int score = 0;
+
+    score += board.vacant_total * 50;
+
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++){
+            score += board.grid[i][j];
+        }
+    }
+
+    if(board.grid[0][0] == max_grid(board)){
+        score += 1000;
+    }
+    else if(max_grid(board) >= 128 &&
+            board.grid[0][0] != max_grid(board)){
+        score -= 2000;
+    }
+
+    score += continuously(board);
+    score += marge_bonus(board) * 50;
+    score += mobility(board) * 100;
 
     return score;
 }

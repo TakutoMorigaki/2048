@@ -14,7 +14,7 @@ Action choose_action(const board_2048 &board){
 
         if(!step(copy, act)) continue;
 
-        int score = evaluate_board_04(copy);
+        int score = evaluate_board_05(copy);
 
         if(score > best_score){
             best_score  = score;
@@ -26,7 +26,7 @@ Action choose_action(const board_2048 &board){
 
 
 int main() {
-    ofstream file("playdata_evaluate4_3.csv", ios::app);
+    ofstream file("./Analyze/playdata_evaluate5.csv", ios::app);
 
     if(!file.is_open()){
         cerr << "file cannot open" << endl;

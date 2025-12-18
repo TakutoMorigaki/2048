@@ -9,3 +9,5 @@ int evaluate_board_02(board_2048 &board);
 int evaluate_board_03(board_2048 &board);
 // 評価関数ver.4
 int evaluate_board_04(board_2048 &board);
+// 評価関数ver.5
+int evaluate_board_05(board_2048 &board);
