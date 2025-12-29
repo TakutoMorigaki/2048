@@ -1,5 +1,6 @@
 #include "board.hpp"
 #include "ai_eval.hpp"
+#include <iostream>
 
 // 最大値の検出
 int max_grid(board_2048 &board){
@@ -67,6 +68,19 @@ int mobility(board_2048 &board){
     if(CanMove_U(board)) mobility++;
     if(CanMove_D(board)) mobility++;
     return mobility;
+}
+
+// 空白のマスの二次元座標を配列に入れて返す(何個あるかの個数も返す)
+void search_vacant(const board_2048 &board, int vacant_xy[][2], int &count){
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++){
+            if(board.grid[i][j] == 0){
+                vacant_xy[count][0] = i;
+                vacant_xy[count][1] = j;
+                count++;
+            }
+        }
+    }
 }
 
 // 左上もしくは右上(ver.4から左上)に最大値が来るようにする
@@ -178,4 +192,34 @@ int evaluate_board_05(board_2048 &board){
     score += mobility(board) * 100;
 
     return score;
+}
+
+// 評価関数を1,2が出現するときの両方の平均をとって、さらにどのマスに出現するかを考慮して空きマスすべてを検討するつもり
+// 結果大失敗。要検討
+int evaluate_allpatern(board_2048 &board){
+    int score_1;        // 1が出現したときのスコア
+    int score_2;        // 2が出現したときのスコア
+    int avg;            // score_1,2の平均
+    int best_score = -1e9;
+
+    int vacant_xy[16][2] = {};
+    int count = 0;
+    search_vacant(board, vacant_xy, count);
+
+    for(int i = 0; i < count; i++){
+        int x = vacant_xy[i][0];
+        int y = vacant_xy[i][1];
+        board.grid[x][y] = 1;
+        score_1 = evaluate_board_05(board);
+
+        board.grid[x][y] = 2;
+        score_2 = evaluate_board_05(board);
+
+        avg = (score_1 + score_2) / 2;
+        if(best_score < avg){
+            best_score = avg;
+        }
+        board.grid[x][y] = 0;
+    }
+    return best_score;
 }
